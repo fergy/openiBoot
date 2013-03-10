@@ -136,10 +136,10 @@ int dma_request(int Source, int SourceTransferWidth, int SourceBurstSize, int De
 	uint32_t DMACConfig;
 
 	if(*controller == 1) {
-		DMACControl = DMAC0 + DMAC0Control0 + (*channel * DMAChannelRegSize);
+		DMACControl = DMAC0 + DMACC0Control + (*channel * DMAChannelRegSize);
 		DMACConfig = DMAC0 + DMACConfiguration;
 	} else if(*controller == 2) {
-		DMACControl = DMAC1 + DMAC0Control0 + (*channel * DMAChannelRegSize);
+		DMACControl = DMAC1 + DMACC0Control + (*channel * DMAChannelRegSize);
 		DMACConfig = DMAC1 + DMACConfiguration;
 	} else {
 		return ERROR_DMA;
@@ -149,25 +149,25 @@ int dma_request(int Source, int SourceTransferWidth, int SourceBurstSize, int De
 
 	SET_REG(DMACConfig, DMACConfiguration_ENABLE);
 
-	config |= (SourceTransferWidth / 2) << DMAC0Control0_SWIDTHSHIFT; // 4 -> 2, 2 -> 1, 1 -> 0
-	config |= (DestinationTransferWidth / 2) << DMAC0Control0_DWIDTHSHIFT; // 4 -> 2, 2 -> 1, 1 -> 0
+	config |= (SourceTransferWidth / 2) << DMACC0Control_SWIDTHSHIFT; // 4 -> 2, 2 -> 1, 1 -> 0
+	config |= (DestinationTransferWidth / 2) << DMACC0Control_DWIDTHSHIFT; // 4 -> 2, 2 -> 1, 1 -> 0
 
 	int x;
 	for(x = 0; x < 7; x++) {
 		if((1 << (x + 1)) >= SourceBurstSize) {
-			config |= x << DMAC0Control0_SBSIZESHIFT;
+			config |= x << DMACC0Control_SBSIZESHIFT;
 			break;
 		}
 	}
 	for(x = 0; x < 7; x++) {
 		if((1 << (x + 1)) >= DestinationBurstSize) {
-			config |= x << DMAC0Control0_DBSIZESHIFT;
+			config |= x << DMACC0Control_DBSIZESHIFT;
 			break;
 		}
 	}
 
-	config |= 1 << DMAC0Control0_TERMINALCOUNTINTERRUPTENABLE;
-	config |= 1 << DMAC0Control0_SOURCEAHBMASTERSELECT;
+	config |= 1 << DMACC0Control_TERMINALCOUNTINTERRUPTENABLE;
+	config |= 1 << DMACC0Control_SOURCEAHBMASTERSELECT;
 
 	SET_REG(DMACControl, config);
 
@@ -181,7 +181,7 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 	uint32_t regControl0;
 	uint32_t regConfiguration;
 
-	const uint32_t regControl0Mask = ~(DMAC0Control0_SIZEMASK | DMAC0Control0_SOURCEINCREMENT | DMAC0Control0_DESTINATIONINCREMENT);
+	const uint32_t regControl0Mask = ~(DMACC0Control_SIZEMASK | DMACC0Control_SOURCEINCREMENT | DMACC0Control_DESTINATIONINCREMENT);
 
 	uint32_t regOffset = (*channel * DMAChannelRegSize);
 
@@ -194,10 +194,10 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 	regSrcAddress = regOffset + DMAC0SrcAddress;
 	regDestAddress = regOffset + DMAC0DestAddress;
 	regLLI = regOffset + DMAC0LLI;
-	regControl0 = regOffset + DMAC0Control0;
-	regConfiguration = regOffset + DMAC0Configuration;
+	regControl0 = regOffset + DMACC0Control;
+	regConfiguration = regOffset + DMACC0Configuration;
 
-	int transfers = size/(1 << DMAC0Control0_DWIDTH(GET_REG(regControl0)));
+	int transfers = size/(1 << DMACC0Control_DWIDTH(GET_REG(regControl0)));
 
 	uint32_t sourcePeripheral = 0;
 	uint32_t destPeripheral = 0;
@@ -211,14 +211,14 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 			SET_REG(regDestAddress, AddressLookupTable[Destination]);
 			sourcePeripheral = PeripheralLookupTable[Source][*controller - 1];
 			destPeripheral = PeripheralLookupTable[Destination][*controller - 1];
-			flowControl =  DMAC0Configuration_FLOWCNTRL_P2P;
+			flowControl =  DMACC0Configuration_FLOWCNTRL_P2P;
 		} else {
 			SET_REG(regSrcAddress, AddressLookupTable[Source]);
 			SET_REG(regDestAddress, Destination);
 			sourcePeripheral = PeripheralLookupTable[Source][*controller - 1];
 			destPeripheral = PeripheralLookupTable[DMA_MEMORY][*controller - 1];
-			flowControl =  DMAC0Configuration_FLOWCNTRL_P2M;
-			destinationIncrement = 1 << DMAC0Control0_DESTINATIONINCREMENT;
+			flowControl =  DMACC0Configuration_FLOWCNTRL_P2M;
+			destinationIncrement = 1 << DMACC0Control_DESTINATIONINCREMENT;
 		}
 	} else {
 		if(Destination <= (sizeof(AddressLookupTable)/sizeof(uint32_t))) {
@@ -226,16 +226,16 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 			SET_REG(regDestAddress, AddressLookupTable[Destination]);
 			sourcePeripheral = PeripheralLookupTable[DMA_MEMORY][*controller - 1];
 			destPeripheral = PeripheralLookupTable[Destination][*controller - 1];
-			flowControl =  DMAC0Configuration_FLOWCNTRL_M2P;
-			sourceIncrement = 1 << DMAC0Control0_SOURCEINCREMENT;
+			flowControl =  DMACC0Configuration_FLOWCNTRL_M2P;
+			sourceIncrement = 1 << DMACC0Control_SOURCEINCREMENT;
 		} else {
 			SET_REG(regSrcAddress, Source);
 			SET_REG(regDestAddress, Destination);
 			sourcePeripheral = PeripheralLookupTable[DMA_MEMORY][*controller - 1];
 			destPeripheral = PeripheralLookupTable[DMA_MEMORY][*controller - 1];
-			flowControl =  DMAC0Configuration_FLOWCNTRL_M2M;
-			sourceIncrement = 1 << DMAC0Control0_SOURCEINCREMENT;
-			destinationIncrement = 1 << DMAC0Control0_DESTINATIONINCREMENT;
+			flowControl =  DMACC0Configuration_FLOWCNTRL_M2M;
+			sourceIncrement = 1 << DMACC0Control_SOURCEINCREMENT;
+			destinationIncrement = 1 << DMACC0Control_DESTINATIONINCREMENT;
 		}
 	}
 
@@ -243,7 +243,7 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 		uint32_t src = GET_REG(regSrcAddress);
 		uint32_t dest = GET_REG(regDestAddress);
 		if(transfers > 0xFFF) {
-			SET_REG(regControl0, GET_REG(regControl0) & ~(1 << DMAC0Control0_TERMINALCOUNTINTERRUPTENABLE));
+			SET_REG(regControl0, GET_REG(regControl0) & ~(1 << DMACC0Control_TERMINALCOUNTINTERRUPTENABLE));
 
 			if(DMALists[*controller - 1][*channel])
 				free(DMALists[*controller - 1][*channel]);
@@ -254,18 +254,18 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 				transfers -= 0xE00;
 				
 				if(sourceIncrement != 0) {
-					src += 0xE00 << DMAC0Control0_DWIDTH(GET_REG(regControl0));
+					src += 0xE00 << DMACC0Control_DWIDTH(GET_REG(regControl0));
 				}
 				if(destinationIncrement != 0) {
-					dest += 0xE00 << DMAC0Control0_DWIDTH(GET_REG(regControl0));
+					dest += 0xE00 << DMACC0Control_DWIDTH(GET_REG(regControl0));
 				}
 
 				item->source = src;
 				item->destination = dest;
 
 				if(transfers <= 0xE00) {
-					item->control = destinationIncrement | sourceIncrement | (regControl0Mask & GET_REG(regControl0)) | (transfers & DMAC0Control0_SIZEMASK)
-						| (1 << DMAC0Control0_TERMINALCOUNTINTERRUPTENABLE);
+					item->control = destinationIncrement | sourceIncrement | (regControl0Mask & GET_REG(regControl0)) | (transfers & DMACC0Control_SIZEMASK)
+						| (1 << DMACC0Control_TERMINALCOUNTINTERRUPTENABLE);
 					item->next = NULL;
 				} else {
 					item->control = destinationIncrement | sourceIncrement | (regControl0Mask & GET_REG(regControl0)) | 0xE00;
@@ -284,11 +284,11 @@ int dma_perform(uint32_t Source, uint32_t Destination, int size, int continueLis
 		SET_REG(regLLI, (uint32_t)&StaticDMALists[*controller - 1][*channel]);
 	}
 
-	SET_REG(regControl0, (GET_REG(regControl0) & regControl0Mask) | destinationIncrement | sourceIncrement | (transfers & DMAC0Control0_SIZEMASK));
-	SET_REG(regConfiguration, DMAC0Configuration_CHANNELENABLED | DMAC0Configuration_TERMINALCOUNTINTERRUPTMASK
-			| (flowControl << DMAC0Configuration_FLOWCNTRLSHIFT)
-			| (destPeripheral << DMAC0Configuration_DESTPERIPHERALSHIFT)
-			| (sourcePeripheral << DMAC0Configuration_SRCPERIPHERALSHIFT));
+	SET_REG(regControl0, (GET_REG(regControl0) & regControl0Mask) | destinationIncrement | sourceIncrement | (transfers & DMACC0Control_SIZEMASK));
+	SET_REG(regConfiguration, DMACC0Configuration_CHANNELENABLED | DMACC0Configuration_TERMINALCOUNTINTERRUPTMASK
+			| (flowControl << DMACC0Configuration_FLOWCNTRLSHIFT)
+			| (destPeripheral << DMACC0Configuration_DESTPERIPHERALSHIFT)
+			| (sourcePeripheral << DMACC0Configuration_SRCPERIPHERALSHIFT));
 
 	return 0;
 }
@@ -353,7 +353,7 @@ void dma_pause(int controller, int channel) {
 		regOffset += DMAC1;
 	}
 
-	SET_REG(regOffset + DMAC0Configuration, GET_REG(regOffset + DMAC0Configuration) & ~DMAC0Configuration_CHANNELENABLED);
+	SET_REG(regOffset + DMACC0Configuration, GET_REG(regOffset + DMACC0Configuration) & ~DMACC0Configuration_CHANNELENABLED);
 }
 
 void dma_resume(int controller, int channel) {
@@ -365,7 +365,7 @@ void dma_resume(int controller, int channel) {
 		regOffset += DMAC1;
 	}
 
-	SET_REG(regOffset + DMAC0Configuration, GET_REG(regOffset + DMAC0Configuration) | DMAC0Configuration_CHANNELENABLED);
+	SET_REG(regOffset + DMACC0Configuration, GET_REG(regOffset + DMACC0Configuration) | DMACC0Configuration_CHANNELENABLED);
 }
 
 

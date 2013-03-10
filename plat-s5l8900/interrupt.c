@@ -31,8 +31,19 @@ int interrupt_setup() {
 	// Set interrupt vector addresses to the interrupt number. This will signal the interrupt handler to consult the handler tables
 	int i;
 	for(i = 0; i < VIC_InterruptSeparator; i++) {
-		SET_REG(VIC0 + VICVECTADDRS + (i * 4), i);
-		SET_REG(VIC1 + VICVECTADDRS + (i * 4), VIC_InterruptSeparator + i);
+		SET_REG(VIC0 + VICVECTADDR0 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR1 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR2 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR3 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR4 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR5 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR6 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR7 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR8 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR9 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR10 + (i * 4), i);
+		SET_REG(VIC0 + VICVECTADDR11 + (i * 4), i);
+		SET_REG(VIC1 + VICVECTADDR0 + (i * 4), VIC_InterruptSeparator + i);
 	}
 
 	memset(InterruptHandlerTable, 0, sizeof(InterruptHandlerTable));

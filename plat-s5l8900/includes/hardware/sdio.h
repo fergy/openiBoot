@@ -3,7 +3,7 @@
 
 #include "hardware/s5l8900.h"
 
-#define SDIO 0x38D00000
+#define SDIO 0x38D00000 //MRVL868X
 #define SDIO_CLOCKGATE 0xB
 
 #ifdef CONFIG_IPOD_TOUCH_1G

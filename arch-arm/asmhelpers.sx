@@ -208,9 +208,10 @@ WaitForInterrupt:
 	MCR	p15, 0,	R0, c7, c0, 4
 #endif
 
+/*fixme: iphone 3gs processor doesn't support WFI!!! 
 #ifdef ARM_A8
 	WFI
-#endif
+#endif*/
 	BX	LR
 
 @
@@ -246,7 +247,7 @@ ClearCPUInstructionCache:
 	NOP
 	NOP
 	NOP
-	BLX	LR
+	BX	LR
 
 CleanDataCacheLineMVA:
 	MCR	p15, 0,	R0, c7, c10, 1

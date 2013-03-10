@@ -4,8 +4,8 @@
 #define I2S0_CLOCK 0x27
 #define I2S1_CLOCK 0x2A
 
-#define I2S0 0x3CA00000
-#define I2S1 0x3CD00000
+#define I2S0 0x3CA00000 //audio0, WM, WM-buttons, WM-output
+#define I2S1 0x3CD00000 //baseband audio i/o
 
 #define I2S_CLKCON 0
 #define I2S_TXCON 0x4

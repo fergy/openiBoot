@@ -6,7 +6,7 @@
  *  @defgroup Buttons
  */
 
-/**
+/*
  * buttons.h
  *
  * Copyright 2011 iDroid Project

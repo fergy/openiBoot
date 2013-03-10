@@ -2,8 +2,8 @@
 #define HW_I2C_H
 
 // Device
-#define I2C0 0x3C600000
-#define I2C1 0x3C900000
+#define I2C0 0x3C600000 //audio0, WM, WM-buttons HID, WM output, LIS, TSL
+#define I2C1 0x3C900000 //camera
 
 // Registers
 #define IICCON 0x0

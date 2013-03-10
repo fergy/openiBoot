@@ -1,7 +1,7 @@
 #ifndef HW_USBPHY_H
 #define HW_USBPHY_H
 
-#define USB_PHY 0x3C400000
+#define USB_PHY 0x3C400000 //OTGphyCtrl
 
 // Registers
 #define OPHYPWR		0

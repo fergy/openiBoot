@@ -2,9 +2,9 @@
 #define HW_SPI_H
 
 // Device
-#define SPI0 0x3C300000
-#define SPI1 0x3CE00000
-#define SPI2 0x3D200000
+#define SPI0 0x3C300000 //LCD
+#define SPI1 0x3CE00000 //LCD0
+#define SPI2 0x3D200000 //Multitouch z2
 
 // Registers
 
