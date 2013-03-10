@@ -7,7 +7,7 @@ import SCons
 #
 # Configuration, change this stuff
 #
-version="0.3"
+version="0.4"
 # /Configuration
 
 SConscript([
